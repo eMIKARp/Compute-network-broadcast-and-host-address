@@ -5,9 +5,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static javafx.scene.input.KeyCode.P;
+import javafx.scene.shape.Arc;
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import static jdk.internal.org.objectweb.asm.commons.GeneratorAdapter.AND;
@@ -64,6 +66,9 @@ public class Main extends JFrame
     private static CustomTextField broadcastBinOutputField = new CustomTextField(binaryMask);
     private static CustomTextField firsthostBinOutputField = new CustomTextField(binaryMask);
     private static CustomTextField lasthostBinOutputField = new CustomTextField(binaryMask);
+   
+    private static DecimalValueMatrix decimalValueMatrix = new DecimalValueMatrix();
+    private static BinaryValueMatrix binaryValueMatrix = new BinaryValueMatrix();
     
     public Main() throws ParseException
     {
@@ -146,6 +151,16 @@ public class Main extends JFrame
         return fHeight;
     }
     
+    public static void setIpAddress(String string)
+    {
+        ipInputField.setValue(string);
+    }
+    
+    public static void setNetmask(String string)
+    {
+        netmaskInputField.setValue(string);
+    }
+    
     public static String getIpAddress()
     {
         return ipInputField.getText();
@@ -156,116 +171,67 @@ public class Main extends JFrame
         return netmaskInputField.getText();
     }
     
-    public static String convertToBinary(String text)
+    public static DecimalValueMatrix getDecimalValueMatrix()
     {
-        String[] decTempTable = text.split("[.]");
-        String[] binTempTable = new String[decTempTable.length];
-        StringBuilder textConvToBinary = new StringBuilder();
-        String tempString = "";
-        
-        for (int i = 0; i < decTempTable.length; i++)
+        return decimalValueMatrix;
+    }
+    
+    public static BinaryValueMatrix getBinaryValueMatrix()
+    {
+        return binaryValueMatrix;
+    }
+    
+    public static String removeDots(String string)
+    {
+        String newString = string.replace(".", "");
+        return newString;
+    }
+    
+    public static String addDots(String string, int indextOfDots)
+    {
+        StringBuilder newString = new StringBuilder(string);
+        for (int i = 0; i < 3; i++)
         {
-            binTempTable[i] = Integer.toBinaryString(Integer.parseInt(decTempTable[i]));
-            if (binTempTable[i].length() < 8)
-            {
-                int x = 8 - binTempTable[i].length();
-                for (int j = 0; j < x; j++ )
-                    binTempTable[i] = "0"+binTempTable[i];
-            }
-            if (i < decTempTable.length-1) textConvToBinary.append(binTempTable[i]+".");
-            else textConvToBinary.append(binTempTable[i]);
-            System.out.println(binTempTable[i]);
+            newString.insert(i * indextOfDots + indextOfDots + i, ".");
         }
-        
-        return textConvToBinary.toString();
+                
+        return newString.toString();
     }
     
-    public static void setIpAddressOutputField(String text)
+    public static void setIpOutputFieldValue(String decValue, String binValue)
     {
-        ipDecOutputField.setText(text);
-        ipBinOutputField.setText(Main.convertToBinary(ipDecOutputField.getText()));
-       
+        Main.ipDecOutputField.setValue(decValue);
+        Main.ipBinOutputField.setValue(binValue);
     }
     
-    public static void setNetmaskOutputField(String text)
+    public static void setNetmaskOutputFieldValue(String decValue, String binValue)
     {
-        netmaskDecOutputField.setText(text);
-        netmaskBinOutputField.setText(Main.convertToBinary(netmaskDecOutputField.getText()));
+        Main.netmaskDecOutputField.setValue(decValue);
+        Main.netmaskBinOutputField.setValue(binValue);
     }
     
-    public static void setBroadcaskOutputField()
+    public static void setNetworkOutputFieldValue(String decValue, String binValue)
     {
-        String netmask = netmaskBinOutputField.getText();
-            String[] netmaskBinOktets = netmask.split("[.]");
-            String[] assistTableNr1; 
-            StringBuilder assistString = new StringBuilder(); 
-            StringBuilder broadBinOut = new StringBuilder();
-            StringBuilder broadDecOut = new StringBuilder();
-        
-        for (int i=0; i < 4; i++)
-        {
-            assistTableNr1 = netmaskBinOktets[i].split("");
-            assistString.delete(0,8);
-            for (int j = 0; j < 8 ; j++)
-                {
-                    if (assistTableNr1[j].equals("1")) assistString.append("0");
-                    else assistString.append("1");
-                }
-            System.out.println(assistString.toString());
-            if (i < 3)
-            {
-               broadBinOut.append(assistString.toString()+".");
-               broadDecOut.append(Integer.parseInt(assistString.toString(),2)+".");
-            }
-            else
-            {
-               broadBinOut.append(assistString.toString());
-               broadDecOut.append(Integer.parseInt(assistString.toString(),2));
-            }
-        }
-        
-        broadcastBinOutputField.setText(broadBinOut.toString());
-        broadcastDecOutputField.setText(broadDecOut.toString());
+        Main.networkDecOutputField.setValue(decValue);
+        Main.networkBinOutputField.setValue(binValue);
     }
     
-    public static void setNetworkOutputField()
+    public static void setBroadcastOutputFieldValue(String decValue, String binValue)
     {
-        String ip = ipBinOutputField.getText();
-        String netmask = netmaskBinOutputField.getText();
-        String[] ipOktets = ip.split("[.]");
-        String[] netmaskOktets = netmask.split("[.]");
-        String[] networkOktets = new String[4];
-        StringBuilder netBinOut = new StringBuilder();
-        StringBuilder netDecOut = new StringBuilder();
-        
-        for (int i = 0; i < 4; i++)
-        {
-            String[] x1 = ipOktets[i].split("");
-            String[] x2 = netmaskOktets[i].split("");
-            StringBuilder z = new StringBuilder();
-            int y = 0;
-            
-            for (int j = 0; j < 8; j++)
-            {
-                z.append((Integer.parseInt(x1[j]) * Integer.parseInt(x2[j])+""));
-            }   
-            
-            y = Integer.parseInt(z+"",2);
-            
-            if (i < 3) 
-            {
-                netBinOut.append(z.toString()+".");
-                netDecOut.append(y+".");
-            }
-            else 
-            {
-                netBinOut.append(z.toString());
-                netDecOut.append(y);
-            }
-        }
-        
-        networkBinOutputField.setText(netBinOut.toString());
-        networkDecOutputField.setText(netDecOut.toString());
+        Main.broadcastDecOutputField.setValue(decValue);
+        Main.broadcastBinOutputField.setValue(binValue);
+    }
+    
+    public static void setFirstHostOutputFieldValue(String decValue, String binValue)
+    {
+        Main.firsthostDecOutputField.setValue(decValue);
+        Main.firsthostBinOutputField.setValue(binValue);
+    }
+    
+    public static void setLastHostOutputFieldValue(String decValue, String binValue)
+    {
+        Main.lasthostDecOutputField.setValue(decValue);
+        Main.lasthostBinOutputField.setValue(binValue);
     }
     
     public static MaskFormatter createFormatter (String mask)
@@ -309,35 +275,90 @@ class CustomButton extends JButton
     
     public static void bReset()
     {
-        System.out.println("Reset");
+        Main.setIpAddress("000.000.000.000");
+        Main.setNetmask("000.000.000.000");
+        Main.setIpOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
+        Main.setNetmaskOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
+        Main.setNetworkOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
+        Main.setBroadcastOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
+        Main.setFirstHostOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
+        Main.setLastHostOutputFieldValue("000.000.000.000", "00000000.00000000.00000000.00000000");
     }
     
     
     public static void bCalculate()
     {
-        System.out.println("Calculate");
         
-        String IpAddress = Main.getIpAddress();
-        String netmask = Main.getNetmask();
-        
-        String[] decIpTable = IpAddress.split("[.]");
-        String[] decNetmaskTable = netmask.split("[.]");
-        
-        int[] binTempTable = new int[decIpTable.length];
-        int[] decTempTable = new int[decIpTable.length];
-
-            for (int i = 0; i <4; i++)
-            {
-                binTempTable[i] = Integer.parseInt(decIpTable[i]) & Integer.parseInt(decNetmaskTable[i]);
-            }
-        
-        Main.setIpAddressOutputField(Main.getIpAddress());
-        Main.setNetmaskOutputField(Main.getNetmask());
-        Main.setNetworkOutputField();
-        Main.setBroadcaskOutputField();
+        for (int j = 0; j < 4; j++)
+        {
+            int ipTemp = Integer.parseInt(Main.removeDots(Main.getIpAddress()).substring(j*3, j*3+3));
+            int netmaskTemp = Integer.parseInt(Main.removeDots(Main.getNetmask()).substring(j*3, j*3+3));
             
+            if (ipTemp > 255 || ipTemp < 0 || netmaskTemp > 255 || netmaskTemp < 0) 
+            {
+                JOptionPane.showConfirmDialog(null,"Wrowadzona wartość wykracza poza przedział 0-255. Wprowadź prawidłową wartość.","Nieprawidłowa wartość", JOptionPane.ERROR_MESSAGE, JOptionPane.OK_OPTION);
+                bReset();
+            }
+        }
+        
+        for (int i = 0; i < 4; i++)
+        {
+           ((Main.getDecimalValueMatrix())).setOctetsValue("Ip address", i, Main.removeDots(Main.getIpAddress()).substring(i*3, i*3+3));
+           ((Main.getBinaryValueMatrix())).setOctetsValue("Ip address", i, Integer.toBinaryString(Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Ip address", i))));
+           ((Main.getDecimalValueMatrix())).setOctetsValue("Netmask", i, Main.removeDots(Main.getNetmask()).substring(i*3, i*3+3));
+           ((Main.getBinaryValueMatrix())).setOctetsValue("Netmask", i, Integer.toBinaryString(Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Netmask", i))));
+        }
+        
+            Main.setIpOutputFieldValue((Main.getDecimalValueMatrix()).getOctetsValue("Ip address"), (Main.getBinaryValueMatrix()).getOctetsValue("Ip address"));
+            Main.setNetmaskOutputFieldValue((Main.getDecimalValueMatrix()).getOctetsValue("Netmask"), (Main.getBinaryValueMatrix()).getOctetsValue("Netmask"));
+            
+        for (int i = 0; i < 4; i++)
+        {
+            String[] ipTempVariable = Main.getBinaryValueMatrix().getOctet("Ip address", i).split("");
+            String[] netmaskTempVariable = Main.getBinaryValueMatrix().getOctet("Netmask", i).split("");
+            StringBuilder tempVariable = new StringBuilder();
+                    
+            for (int j = 0; j < 8; j++)
+            {
+                tempVariable.append(Integer.parseInt(ipTempVariable[j]) * Integer.parseInt(netmaskTempVariable[j]));
+            }
+            
+            (Main.getBinaryValueMatrix()).setOctetsValue("Network", i, tempVariable.toString());
+            (Main.getDecimalValueMatrix()).setOctetsValue("Network", i, Integer.parseInt(tempVariable.toString(),2)+"");
+        }
+            Main.setNetworkOutputFieldValue((Main.getDecimalValueMatrix()).getOctetsValue("Network"), (Main.getBinaryValueMatrix()).getOctetsValue("Network"));
+            
+            String[] broadcastTempVariable = ((((Main.getBinaryValueMatrix()).getOctetsValue("Netmask").replace("1","x")).replace("0","1")).replace("x","0")).split("[.]");
+            
+            for (int i = 0; i < 4; i++)
+            {
+                (Main.getDecimalValueMatrix()).setOctetsValue("Broadcast", i, Integer.parseInt(broadcastTempVariable[i],2)+ Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Network",i))+"");
+                (Main.getBinaryValueMatrix()).setOctetsValue("Broadcast", i, Integer.toBinaryString(Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Broadcast", i))));
+            }
+            
+            Main.setBroadcastOutputFieldValue(((Main.getDecimalValueMatrix()).getOctetsValue("Broadcast")), ((Main.getBinaryValueMatrix()).getOctetsValue("Broadcast")));
+     
+        for (int i = 0; i < 4; i++)
+        {
+            if (i < 3)
+            {
+            (Main.getDecimalValueMatrix()).setOctetsValue("First host", i, (Main.getDecimalValueMatrix()).getOctet("Network", i));
+            (Main.getDecimalValueMatrix()).setOctetsValue("Last host", i, (Main.getDecimalValueMatrix()).getOctet("Broadcast", i));
+            }
+            else
+            {
+            (Main.getDecimalValueMatrix()).setOctetsValue("First host", i, (Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Network", i))+1)+"");
+            (Main.getDecimalValueMatrix()).setOctetsValue("Last host", i, (Integer.parseInt((Main.getDecimalValueMatrix()).getOctet("Broadcast", i))-1)+"");
+            }
+            
+            (Main.getBinaryValueMatrix()).setOctetsValue("First host", i, Integer.toBinaryString(Integer.parseInt(((Main.getDecimalValueMatrix()).getOctet("First host", i)))));
+            (Main.getBinaryValueMatrix()).setOctetsValue("Last host", i, Integer.toBinaryString(Integer.parseInt(((Main.getDecimalValueMatrix()).getOctet("Last host", i)))));
+            
+        }
+
+        Main.setFirstHostOutputFieldValue((Main.getDecimalValueMatrix()).getOctetsValue("First host"),(Main.getBinaryValueMatrix()).getOctetsValue("First host"));
+        Main.setLastHostOutputFieldValue((Main.getDecimalValueMatrix()).getOctetsValue("Last host"),(Main.getBinaryValueMatrix()).getOctetsValue("Last host"));
     }
-    
 }
 
 class CustomTextField extends JFormattedTextField
@@ -357,5 +378,78 @@ class CustomLabel extends JTextField
         super(lText);
         this.setEditable(false);
         this.setPreferredSize(new Dimension(Main.getFrameWidth() / 4, Main.getFrameHeight() / 15));
+    }
+}
+
+
+class DecimalValueMatrix
+{
+    private static HashMap<String, ArrayList<String>> decValueMatrix = new HashMap<String, ArrayList<String>>();
+
+    public DecimalValueMatrix() 
+    {
+        decValueMatrix.put("Ip address", new ArrayList<String>());
+        decValueMatrix.put("Netmask", new ArrayList<String>());
+        decValueMatrix.put("Network", new ArrayList<String>());
+        decValueMatrix.put("Broadcast", new ArrayList<String>());
+        decValueMatrix.put("First host", new ArrayList<String>());
+        decValueMatrix.put("Last host", new ArrayList<String>());
+    }
+    
+    public static String getOctet (String key, int index)
+    {
+        return ((decValueMatrix.get(key))).get(index);
+    }
+    
+    public static String getOctetsValue (String key)
+    {
+        StringBuilder tempVariable = new StringBuilder();
+        
+        for (int i = 0; i < 4; i++)
+            tempVariable.append(((decValueMatrix.get(key))).get(i));
+        return Main.addDots(tempVariable.toString(), 3);
+    }
+    
+    public static void setOctetsValue(String key, int octetIndex, String octectValue)
+    {
+        while (octectValue.length() < 3)
+            octectValue = "0"+octectValue;
+        ((decValueMatrix.get(key))).add(octetIndex, octectValue);
+    }
+}
+
+class BinaryValueMatrix
+{
+    private static HashMap<String, ArrayList<String>> binValueMatrix = new HashMap<String, ArrayList<String>>();
+
+    public BinaryValueMatrix() 
+    {
+        binValueMatrix.put("Ip address", new ArrayList<String>());
+        binValueMatrix.put("Netmask", new ArrayList<String>());
+        binValueMatrix.put("Network", new ArrayList<String>());
+        binValueMatrix.put("Broadcast", new ArrayList<String>());
+        binValueMatrix.put("First host", new ArrayList<String>());
+        binValueMatrix.put("Last host", new ArrayList<String>());
+    }
+    
+    public static String getOctetsValue (String key)
+    {
+        StringBuilder tempVariable = new StringBuilder();
+        
+        for (int i =0; i < 4; i++)
+            tempVariable.append((binValueMatrix.get(key)).get(i));
+        return Main.addDots(tempVariable.toString(), 8);
+    }
+    
+    public static void setOctetsValue(String key, int octetIndex, String octectValue)
+    {
+        while (octectValue.length() < 8)
+            octectValue = "0"+octectValue;
+        ((binValueMatrix.get(key))).add(octetIndex, octectValue);
+    }
+    
+    public static String getOctet (String key, int index)
+    {
+        return ((binValueMatrix.get(key))).get(index);
     }
 }
