@@ -196,12 +196,36 @@ public class Main extends JFrame
     public static void setBroadcaskOutputField()
     {
         String netmask = netmaskBinOutputField.getText();
-        String[] netmaskTempTable = netmask.split("[.]");
+            String[] netmaskBinOktets = netmask.split("[.]");
+            String[] assistTableNr1; 
+            StringBuilder assistString = new StringBuilder(); 
+            StringBuilder broadBinOut = new StringBuilder();
+            StringBuilder broadDecOut = new StringBuilder();
         
         for (int i=0; i < 4; i++)
         {
-            String[] x1 = netmaskTempTable[i].split("");
+            assistTableNr1 = netmaskBinOktets[i].split("");
+            assistString.delete(0,8);
+            for (int j = 0; j < 8 ; j++)
+                {
+                    if (assistTableNr1[j].equals("1")) assistString.append("0");
+                    else assistString.append("1");
+                }
+            System.out.println(assistString.toString());
+            if (i < 3)
+            {
+               broadBinOut.append(assistString.toString()+".");
+               broadDecOut.append(Integer.parseInt(assistString.toString(),2)+".");
+            }
+            else
+            {
+               broadBinOut.append(assistString.toString());
+               broadDecOut.append(Integer.parseInt(assistString.toString(),2));
+            }
         }
+        
+        broadcastBinOutputField.setText(broadBinOut.toString());
+        broadcastDecOutputField.setText(broadDecOut.toString());
     }
     
     public static void setNetworkOutputField()
@@ -216,8 +240,8 @@ public class Main extends JFrame
         
         for (int i = 0; i < 4; i++)
         {
-            String[] x1 =ipOktets[i].split("");
-            String[] x2 =netmaskOktets[i].split("");
+            String[] x1 = ipOktets[i].split("");
+            String[] x2 = netmaskOktets[i].split("");
             StringBuilder z = new StringBuilder();
             int y = 0;
             
@@ -310,6 +334,7 @@ class CustomButton extends JButton
         Main.setIpAddressOutputField(Main.getIpAddress());
         Main.setNetmaskOutputField(Main.getNetmask());
         Main.setNetworkOutputField();
+        Main.setBroadcaskOutputField();
             
     }
     
